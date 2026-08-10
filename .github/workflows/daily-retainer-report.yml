@@ -2,6 +2,11 @@ name: Daily retainer hours report
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print the report instead of sending it"
+        type: boolean
+        default: true
   schedule:
     # 13:00 UTC daily. Adjust for your timezone.
     - cron: "0 13 * * *"
@@ -15,8 +20,14 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install requests
-      - run: python -m retainer_reminder.run_daily
+      - name: Run report
         env:
           CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
           CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
           CLICKUP_CHANNEL_ID: ${{ secrets.CLICKUP_CHANNEL_ID }}
+        run: |
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}" = "true" ]; then
+            python -m retainer_reminder.run_daily --dry-run
+          else
+            python -m retainer_reminder.run_daily
+          fi
