@@ -23,12 +23,12 @@ class ClickUpClient:
         self._session.headers["Authorization"] = api_token
 
     def _get(self, path: str, **params):
-        resp = self._session.get(f"{BASE_URL}{path}", params=params, timeout=30)
+        resp = self._session.get(f"{BASE_URL}{path}", params=params, timeout=60)
         resp.raise_for_status()
         return resp.json()
 
     def _post(self, path: str, json_body: dict):
-        resp = self._session.post(f"{BASE_URL}{path}", json=json_body, timeout=30)
+        resp = self._session.post(f"{BASE_URL}{path}", json=json_body, timeout=60)
         resp.raise_for_status()
         return resp.json()
 
