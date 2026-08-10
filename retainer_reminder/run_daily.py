@@ -96,7 +96,7 @@ def main():
 
     client = ClickUpClient(token)
     clients = gather_clients(client, team_id)
-    message = build_summary(clients, testing=True)
+    message = build_summary(clients, testing=False)
 
     if args.dry_run:
         print(message)

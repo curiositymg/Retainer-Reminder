@@ -29,9 +29,10 @@ still governed by whatever ClickUp account the token/connection belongs to.
   agent-turn path.
 - `retainer_reminder/clickup_client.py` — thin ClickUp REST API v2 wrapper
   used by the direct-API path. Tag-based task discovery only (see "Client
-  discovery" below); the chat-send endpoint should be double-checked against
-  current ClickUp API docs before relying on it, since ClickUp Chat is a
-  newer surface.
+  discovery" below). Chat sends go through ClickUp's api/v3 Chat API
+  (`/workspaces/{team_id}/chat/channels/{channel_id}/messages`), confirmed
+  working against production with retry-on-5xx (that API is documented as
+  experimental, so re-verify the path if it starts failing).
 - `retainer_reminder/run_daily.py` — orchestrates the direct-API path:
   gather clients → compute → send (or `--dry-run` to just print).
 - `retainer_reminder/summary.py` — pure, ClickUp-independent calculation and
@@ -41,25 +42,26 @@ still governed by whatever ClickUp account the token/connection belongs to.
   and negative-remaining cases). No network calls, fully unit tested.
 - `tests/` — unit tests for the above (13 tests, no network required).
 
-## Known blocker: workspace-wide time entries
+## Workspace-wide time entries
 
 The daily workflow requires summing time tracked by **everyone** on a client
 Space this month. ClickUp's time-entries API only returns the *authenticated
 user's own* entries unless the caller has "see time tracked by others"
 permission and passes `assignee: any` (or explicit other users' IDs).
 
-As of this writing, the connected ClickUp integration is authenticated as a
-single team member and does **not** have that permission — requests for any
-other user's time (or `any`) fail with `"You have no access"`. Until a
-workspace admin/owner either:
+**Resolved for the direct-API path**: `CLICKUP_API_TOKEN` is set to a
+ClickUp account (CMG's project manager) that has this permission, confirmed
+against production. `assignee: "any"` resolves to every workspace member's
+ID (`get_workspace_member_ids`) since ClickUp's real API has no literal
+"all users" value.
 
-1. grants the connected integration "see time tracked by others", or
-2. reauthorizes the connection under an account that already has it,
-
-...the workflow can only see one person's tracked time, which understates
-Hours Used for every client with more than one contributor. Do not send the
-daily summary to the real "CMG Crew" channel (or treat it as authoritative)
-until this is resolved and verified.
+**Still limited for the MCP path** (`WORKFLOW.md`): the MCP connector used
+in a live agent session is a separate authorization from the API token
+above, tied to whatever account it's connected as. If that's not an account
+with the same permission, `assignee: ["any"]` will still fail there with
+`"You have no access"` even though the direct-API path works — check which
+path (and which account) is actually running before trusting either one's
+output.
 
 ## Client discovery
 

@@ -7,11 +7,10 @@ report it daily.
 
 ## Prerequisite
 
-Before running this for real: confirm the connected ClickUp integration can
-see time tracked by users other than itself (`assignee: ["any"]` on time
-entries must not return "You have no access"). If it fails, stop and flag it
-instead of sending a summary built from partial data — see "Known blocker"
-in `README.md`.
+Confirm the ClickUp account/token in use can see time tracked by users
+other than itself (`assignee: ["any"]` on time entries must not return
+"You have no access"). If it fails, stop and flag it instead of sending a
+summary built from partial data — see `README.md`.
 
 ## Daily steps
 
@@ -42,25 +41,22 @@ in `README.md`.
       client Space each entry's task belongs to.
    c. Calculate: `Hours Remaining = Monthly Hours Cap − Hours Used`.
 
-3. **Send ONE daily message** via ClickUp DM to the configured recipient,
-   listing every client:
+3. **Send ONE daily message** to the configured ClickUp channel, listing
+   every client, alphabetical by name:
 
    ```
    Client A: 12.5h remaining (7.5h used / 20h cap)
    Client B: 3h remaining (17h used / 20h cap)
    Client C: not configured — no Monthly Hours Cap set
-
-   [TESTING MODE — this is going to me only. Will switch to the "CMG Crew"
-   channel once verified.]
    ```
 
-   Use `retainer_reminder.summary.build_summary()` to render this from the
-   gathered data instead of hand-formatting it.
+   Use `retainer_reminder.summary.build_summary(clients, testing=False)` to
+   render this from the gathered data instead of hand-formatting it.
 
 ## Rules
 
-- DM only — no CMG Crew channel post, no comments on the retainer-hours
-  task, during testing.
+- Send to the configured ClickUp channel only — no comments on the
+  retainer-hours task itself.
 - Do not edit or overwrite any custom fields.
 - Send one combined daily summary, not separate messages per client.
 - Keep it numbers-first: no commentary, no paragraphs.
