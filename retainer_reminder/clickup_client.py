@@ -89,13 +89,14 @@ class ClickUpClient:
     def send_chat_message(self, team_id: str, channel_id: str, content: str) -> dict:
         """Post a message to a ClickUp Chat channel (DM or group).
 
-        Uses ClickUp's Chat API (api/v3, workspace-scoped) — a newer surface
-        than the rest of this client's v2 calls. Verify against current
-        ClickUp API docs before relying on this if it starts failing;
-        endpoint details on newer APIs can change.
+        Uses ClickUp's Chat API (api/v3, workspace-scoped) — a newer,
+        labeled-experimental surface per ClickUp's docs, unlike the rest of
+        this client's stable v2 calls. Verify against current ClickUp API
+        docs before relying on this if it starts failing again; endpoint
+        details on experimental APIs can change.
         """
         return self._post(
-            f"/workspaces/{team_id}/channels/{channel_id}/messages",
+            f"/workspaces/{team_id}/chat/channels/{channel_id}/messages",
             {"content": content, "content_format": "text/plain"},
             base=CHAT_BASE_URL,
         )
