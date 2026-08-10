@@ -10,6 +10,7 @@ for why the small number of un-tagged clients need the tag added in
 ClickUp rather than being name-matched here.
 """
 
+import calendar
 import time
 
 import requests
@@ -96,9 +97,13 @@ class ClickUpClient:
 
 
 def month_start_ms(now: float | None = None) -> int:
+    """Start of the current UTC month, as epoch ms. Timezone-independent —
+    uses calendar.timegm rather than time.mktime, which interprets its
+    input as local time and would shift the boundary on any machine not
+    already set to UTC."""
     now = now or time.time()
     struct = time.gmtime(now)
     month_start = time.struct_time(
         (struct.tm_year, struct.tm_mon, 1, 0, 0, 0, 0, 0, 0)
     )
-    return int(time.mktime(month_start) * 1000)
+    return calendar.timegm(month_start) * 1000
