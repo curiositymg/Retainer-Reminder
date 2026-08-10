@@ -68,8 +68,10 @@ def format_client_line(result: ClientResult) -> str:
 
 
 def build_summary(clients: list[ClientRetainer], testing: bool = True) -> str:
-    """Build the full daily DM body: one line per client, numbers-first."""
-    lines = [format_client_line(evaluate_client(c)) for c in clients]
+    """Build the full daily DM body: one line per client, numbers-first,
+    alphabetical by client name."""
+    ordered = sorted(clients, key=lambda c: c.name.lower())
+    lines = [format_client_line(evaluate_client(c)) for c in ordered]
 
     if testing:
         lines.append("")

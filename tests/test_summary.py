@@ -61,3 +61,19 @@ def test_build_summary_matches_spec_format():
     assert "Client B: 3h remaining (17h used / 20h cap)" in summary
     assert "Client C: not configured — no Monthly Hours Cap set" in summary
     assert "TESTING MODE" in summary
+
+
+def test_build_summary_sorts_alphabetically():
+    clients = [
+        ClientRetainer(name="Zebra Co", monthly_hours_cap=10),
+        ClientRetainer(name="apple Inc", monthly_hours_cap=10),
+        ClientRetainer(name="Mango LLC", monthly_hours_cap=10),
+    ]
+    summary = build_summary(clients, testing=False)
+    lines = [line for line in summary.splitlines() if line]
+
+    assert lines == [
+        "apple Inc: 10h remaining (0h used / 10h cap)",
+        "Mango LLC: 10h remaining (0h used / 10h cap)",
+        "Zebra Co: 10h remaining (0h used / 10h cap)",
+    ]
