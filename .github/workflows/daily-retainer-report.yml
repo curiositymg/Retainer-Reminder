@@ -8,14 +8,11 @@ on:
         type: boolean
         default: true
   schedule:
-    # TEMPORARY verification schedule: hourly, 3pm-10pm Central (CDT,
-    # UTC-5) = 20,21,22,23,0,1,2,3 UTC. Revert to the once-daily line
-    # below once the auto-trigger is confirmed working.
-    - cron: "0 20,21,22,23,0,1,2,3 * * *"
-    # 13:00 UTC daily = 8am Central (CDT). Note: GitHub cron is fixed UTC
-    # and doesn't shift for DST, so this drifts to 7am once CST resumes
-    # in November — adjust the hour then if a fixed local time matters.
-    # - cron: "0 13 * * *"
+    # 12:55 UTC, Mon-Fri = 7:55am Central (currently CDT, UTC-5). GitHub
+    # cron is fixed UTC and doesn't shift for DST, so this drifts to
+    # 6:55am once CST resumes in November — change the hour to 13 then
+    # (13:55 UTC) to hold 7:55am local, or leave it if 6:55am is fine.
+    - cron: "55 12 * * 1-5"
 
 jobs:
   send-report:
