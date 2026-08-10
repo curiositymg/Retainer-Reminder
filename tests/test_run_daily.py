@@ -16,6 +16,22 @@ def test_client_name_no_separator():
     assert client_name_from_task({"name": "Watson Spence"}) == "Watson Spence"
 
 
+def test_client_name_multiple_pipes_keeps_full_client_name():
+    # Real case: tag was added to "PD | Brightridge | Retainer Hours" and
+    # naively taking the first "|" segment produced just "PD".
+    assert (
+        client_name_from_task({"name": "PD | Brightridge | Retainer Hours"})
+        == "PD | Brightridge"
+    )
+
+
+def test_client_name_monthly_retainer_hours_suffix():
+    assert (
+        client_name_from_task({"name": "Pro Tech | Monthly Retainer Hours"})
+        == "Pro Tech"
+    )
+
+
 def test_extract_cap_present():
     task = {"custom_fields": [{"name": "Monthly Hours Cap", "value": "20"}]}
     assert extract_cap(task) == 20.0

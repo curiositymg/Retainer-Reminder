@@ -28,8 +28,14 @@ CAP_FIELD_NAME = "Monthly Hours Cap"
 
 
 def client_name_from_task(task: dict) -> str:
-    name = task["name"]
-    return name.split("|")[0].strip() if "|" in name else name
+    """Strip a trailing "| Retainer Hours" (or "| Monthly Retainer Hours",
+    etc.) segment, keeping everything before it — not just the first "|"
+    segment, since some tasks are named "PD | ClientName | Retainer Hours"
+    with more than one pipe."""
+    parts = [p.strip() for p in task["name"].split("|")]
+    if len(parts) > 1 and "retainer hours" in parts[-1].lower():
+        return " | ".join(parts[:-1])
+    return task["name"].strip()
 
 
 def extract_cap(task: dict) -> float | None:
