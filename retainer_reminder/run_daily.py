@@ -15,7 +15,10 @@ Usage:
 
 import argparse
 import os
+import sys
 import time
+
+import requests
 
 from retainer_reminder.clickup_client import ClickUpClient, month_start_ms
 from retainer_reminder.summary import ClientRetainer, build_summary
@@ -58,7 +61,14 @@ def gather_clients(client: ClickUpClient, team_id: str) -> list[ClientRetainer]:
         if not task_id:
             continue
         if task_id not in space_id_cache:
-            space_id_cache[task_id] = client.get_task_space_id(task_id)
+            try:
+                space_id_cache[task_id] = client.get_task_space_id(task_id)
+            except requests.exceptions.HTTPError as exc:
+                # A time entry can reference a task that's since been
+                # deleted or is otherwise unreachable — skip attributing
+                # that entry rather than failing the whole report.
+                print(f"warning: skipping task {task_id}: {exc}", file=sys.stderr)
+                space_id_cache[task_id] = None
         space_id = space_id_cache[task_id]
         if space_id:
             durations_by_space.setdefault(space_id, []).append(int(entry["duration"]))
