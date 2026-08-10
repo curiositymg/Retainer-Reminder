@@ -86,7 +86,9 @@ class ClickUpClient:
         data = self._get(f"/team/{team_id}/time_entries", **params)
         return data.get("data", [])
 
-    def send_chat_message(self, team_id: str, channel_id: str, content: str) -> dict:
+    def send_chat_message(
+        self, team_id: str, channel_id: str, content: str, retries: int = 2
+    ) -> dict:
         """Post a message to a ClickUp Chat channel (DM or group).
 
         Uses ClickUp's Chat API (api/v3, workspace-scoped) — a newer,
@@ -94,12 +96,20 @@ class ClickUpClient:
         this client's stable v2 calls. Verify against current ClickUp API
         docs before relying on this if it starts failing again; endpoint
         details on experimental APIs can change.
+
+        Retries on 5xx: observed a one-off transient 500 from this endpoint
+        in production that succeeded immediately on retry.
         """
-        return self._post(
-            f"/workspaces/{team_id}/chat/channels/{channel_id}/messages",
-            {"content": content, "content_format": "text/plain"},
-            base=CHAT_BASE_URL,
-        )
+        path = f"/workspaces/{team_id}/chat/channels/{channel_id}/messages"
+        body = {"content": content, "content_format": "text/plain"}
+        for attempt in range(retries + 1):
+            try:
+                return self._post(path, body, base=CHAT_BASE_URL)
+            except requests.exceptions.HTTPError as exc:
+                is_server_error = exc.response is not None and exc.response.status_code >= 500
+                if not is_server_error or attempt == retries:
+                    raise
+                time.sleep(2**attempt)
 
 
 def month_start_ms(now: float | None = None) -> int:
