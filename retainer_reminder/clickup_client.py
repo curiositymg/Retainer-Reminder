@@ -51,6 +51,13 @@ class ClickUpClient:
         data = self._get(f"/task/{task_id}")
         return data.get("space", {}).get("id")
 
+    def get_workspace_member_ids(self, team_id: str) -> list[str]:
+        data = self._get("/team")
+        for team in data.get("teams", []):
+            if team.get("id") == team_id:
+                return [str(m["user"]["id"]) for m in team.get("members", [])]
+        return []
+
     def get_time_entries(
         self,
         team_id: str,
@@ -58,11 +65,19 @@ class ClickUpClient:
         end_date_ms: int,
         assignee: str | None = None,
     ) -> list[dict]:
-        """Time entries in [start_date_ms, end_date_ms]. assignee=None means
-        'whatever the token's own permissions allow' — ClickUp returns only
-        the token owner's entries unless that account can see others'."""
+        """Time entries in [start_date_ms, end_date_ms].
+
+        assignee=None means 'whatever the token's own permissions allow' —
+        ClickUp returns only the token owner's entries unless that account
+        can see others'. assignee="any" resolves to every workspace member's
+        ID (ClickUp's API has no literal "all users" value — the caller
+        still needs "see time tracked by others" permission for this to
+        return anything beyond the token owner's own entries).
+        """
         params = {"start_date": start_date_ms, "end_date": end_date_ms}
-        if assignee:
+        if assignee == "any":
+            params["assignee"] = ",".join(self.get_workspace_member_ids(team_id))
+        elif assignee:
             params["assignee"] = assignee
         data = self._get(f"/team/{team_id}/time_entries", **params)
         return data.get("data", [])
