@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 BASE_URL = "https://api.clickup.com/api/v2"
+CHAT_BASE_URL = "https://api.clickup.com/api/v3"  # Chat lives under v3, not v2
 REPORT_TIMEZONE = ZoneInfo("America/Chicago")  # CMG's timezone (CST/CDT)
 
 
@@ -25,13 +26,13 @@ class ClickUpClient:
         self._session = requests.Session()
         self._session.headers["Authorization"] = api_token
 
-    def _get(self, path: str, **params):
-        resp = self._session.get(f"{BASE_URL}{path}", params=params, timeout=60)
+    def _get(self, path: str, base: str = BASE_URL, **params):
+        resp = self._session.get(f"{base}{path}", params=params, timeout=60)
         resp.raise_for_status()
         return resp.json()
 
-    def _post(self, path: str, json_body: dict):
-        resp = self._session.post(f"{BASE_URL}{path}", json=json_body, timeout=60)
+    def _post(self, path: str, json_body: dict, base: str = BASE_URL):
+        resp = self._session.post(f"{base}{path}", json=json_body, timeout=60)
         resp.raise_for_status()
         return resp.json()
 
@@ -85,16 +86,18 @@ class ClickUpClient:
         data = self._get(f"/team/{team_id}/time_entries", **params)
         return data.get("data", [])
 
-    def send_chat_message(self, channel_id: str, content: str) -> dict:
+    def send_chat_message(self, team_id: str, channel_id: str, content: str) -> dict:
         """Post a message to a ClickUp Chat channel (DM or group).
 
-        Uses ClickUp's Chat API. Verify against current ClickUp API docs
-        before relying on this in production — Chat is a newer surface and
-        endpoint details can change.
+        Uses ClickUp's Chat API (api/v3, workspace-scoped) — a newer surface
+        than the rest of this client's v2 calls. Verify against current
+        ClickUp API docs before relying on this if it starts failing;
+        endpoint details on newer APIs can change.
         """
         return self._post(
-            f"/chat/v3/channels/{channel_id}/messages",
+            f"/workspaces/{team_id}/channels/{channel_id}/messages",
             {"content": content, "content_format": "text/plain"},
+            base=CHAT_BASE_URL,
         )
 
 

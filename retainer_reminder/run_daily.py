@@ -102,8 +102,8 @@ def main():
         print(message)
         return
 
-    channel_id = os.environ["CLICKUP_CHANNEL_ID"]
-    client.send_chat_message(channel_id, message)
+    channel_id = os.environ["CLICKUP_CHANNEL_ID"].strip()
+    client.send_chat_message(team_id, channel_id, message)
 
 
 if __name__ == "__main__":
