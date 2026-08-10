@@ -10,12 +10,14 @@ for why the small number of un-tagged clients need the tag added in
 ClickUp rather than being name-matched here.
 """
 
-import calendar
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import requests
 
 BASE_URL = "https://api.clickup.com/api/v2"
+REPORT_TIMEZONE = ZoneInfo("America/Chicago")  # CMG's timezone (CST/CDT)
 
 
 class ClickUpClient:
@@ -97,13 +99,13 @@ class ClickUpClient:
 
 
 def month_start_ms(now: float | None = None) -> int:
-    """Start of the current UTC month, as epoch ms. Timezone-independent —
-    uses calendar.timegm rather than time.mktime, which interprets its
-    input as local time and would shift the boundary on any machine not
-    already set to UTC."""
+    """Start of the current month in CMG's timezone (America/Chicago),
+    as epoch ms. Using the CST/CDT calendar boundary — not UTC's — matters
+    because a UTC month boundary is 5-6 hours off from what CMG considers
+    "the 1st", which would misclassify hours logged near month-end."""
     now = now or time.time()
-    struct = time.gmtime(now)
-    month_start = time.struct_time(
-        (struct.tm_year, struct.tm_mon, 1, 0, 0, 0, 0, 0, 0)
+    local_now = datetime.fromtimestamp(now, tz=REPORT_TIMEZONE)
+    month_start = local_now.replace(
+        day=1, hour=0, minute=0, second=0, microsecond=0
     )
-    return calendar.timegm(month_start) * 1000
+    return int(month_start.timestamp() * 1000)

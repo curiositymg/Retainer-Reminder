@@ -8,7 +8,9 @@ on:
         type: boolean
         default: true
   schedule:
-    # 13:00 UTC daily. Adjust for your timezone.
+    # 13:00 UTC daily = 8am Central (CDT). Note: GitHub cron is fixed UTC
+    # and doesn't shift for DST, so this drifts to 7am once CST resumes
+    # in November — adjust the hour then if a fixed local time matters.
     - cron: "0 13 * * *"
 
 jobs:
@@ -24,7 +26,9 @@ jobs:
         env:
           CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_API_TOKEN }}
           CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
-          CLICKUP_CHANNEL_ID: ${{ secrets.CLICKUP_CHANNEL_ID }}
+          # Not a secret (just a chat room ID) — CMG's confirmed send target.
+          # A CLICKUP_CHANNEL_ID repo secret, if set, overrides this.
+          CLICKUP_CHANNEL_ID: ${{ secrets.CLICKUP_CHANNEL_ID || '2kyd5muz-26254' }}
         run: |
           if [ "${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}" = "true" ]; then
             python -m retainer_reminder.run_daily --dry-run
