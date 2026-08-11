@@ -8,11 +8,13 @@ on:
         type: boolean
         default: true
   schedule:
-    # 12:55 UTC, Mon-Fri = 7:55am Central (currently CDT, UTC-5). GitHub
-    # cron is fixed UTC and doesn't shift for DST, so this drifts to
-    # 6:55am once CST resumes in November — change the hour to 13 then
-    # (13:55 UTC) to hold 7:55am local, or leave it if 6:55am is fine.
-    - cron: "55 12 * * 1-5"
+    # 11:55 UTC, Mon-Fri = 6:55am Central (currently CDT, UTC-5). Set an
+    # hour earlier than the intended 7:55am to absorb GitHub's observed
+    # scheduling delay on this account (first scheduled run fired ~1h13m
+    # late). GitHub cron is fixed UTC and doesn't shift for DST, so this
+    # drifts to 5:55am once CST resumes in November — change the hour to
+    # 12 then (12:55 UTC) to hold 6:55am local.
+    - cron: "55 11 * * 1-5"
 
 jobs:
   send-report:
