@@ -101,7 +101,7 @@ class ClickUpClient:
         in production that succeeded immediately on retry.
         """
         path = f"/workspaces/{team_id}/chat/channels/{channel_id}/messages"
-        body = {"content": content, "content_format": "text/plain"}
+        body = {"content": content, "content_format": "text/md"}
         for attempt in range(retries + 1):
             try:
                 return self._post(path, body, base=CHAT_BASE_URL)

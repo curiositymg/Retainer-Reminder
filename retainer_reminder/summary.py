@@ -68,10 +68,30 @@ def format_client_line(result: ClientResult) -> str:
 
 
 def build_summary(clients: list[ClientRetainer], testing: bool = True) -> str:
-    """Build the full daily DM body: one line per client, numbers-first,
-    alphabetical by client name."""
-    ordered = sorted(clients, key=lambda c: c.name.lower())
-    lines = [format_client_line(evaluate_client(c)) for c in ordered]
+    """Build the full daily message body, split into sections so clients at
+    or below zero stand out: "Remaining Hours" (hours_remaining > 0), then
+    "No more hours remaining" (<= 0, includes exactly 0), then any
+    not-configured clients — alphabetical by name within each section.
+    Renders as markdown (bold section headers) — send with
+    content_format "text/md", not "text/plain"."""
+    results = sorted(
+        (evaluate_client(c) for c in clients), key=lambda r: r.name.lower()
+    )
+
+    has_remaining = [r for r in results if r.configured and r.hours_remaining > 0]
+    depleted = [r for r in results if r.configured and r.hours_remaining <= 0]
+    not_configured = [r for r in results if not r.configured]
+
+    lines = ["**Remaining Hours**"]
+    lines.extend(format_client_line(r) for r in has_remaining)
+    lines.append("")
+    lines.append("**No more hours remaining**")
+    lines.extend(format_client_line(r) for r in depleted)
+
+    if not_configured:
+        lines.append("")
+        lines.append("**Not Configured**")
+        lines.extend(format_client_line(r) for r in not_configured)
 
     if testing:
         lines.append("")
