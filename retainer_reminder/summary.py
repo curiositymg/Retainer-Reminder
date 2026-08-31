@@ -78,8 +78,15 @@ def build_summary(clients: list[ClientRetainer], testing: bool = True) -> str:
         (evaluate_client(c) for c in clients), key=lambda r: r.name.lower()
     )
 
-    has_remaining = [r for r in results if r.configured and r.hours_remaining > 0]
-    depleted = [r for r in results if r.configured and r.hours_remaining <= 0]
+    # Bucket by the *rounded* value, not the raw one — a client with e.g.
+    # 0.03h raw remaining displays as "0h remaining" (see format_hours), so
+    # it must land in "No more hours remaining" too, not just true zero.
+    has_remaining = [
+        r for r in results if r.configured and round(r.hours_remaining, 1) > 0
+    ]
+    depleted = [
+        r for r in results if r.configured and round(r.hours_remaining, 1) <= 0
+    ]
     not_configured = [r for r in results if not r.configured]
 
     lines = ["**Remaining Hours**"]

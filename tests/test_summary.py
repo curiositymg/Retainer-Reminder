@@ -104,6 +104,22 @@ def test_build_summary_splits_into_sections():
     assert "No Cap Set: not configured — no Monthly Hours Cap set" in lines[not_configured_idx:]
 
 
+def test_build_summary_buckets_by_rounded_value_not_raw():
+    # 71,892,000 ms = 19.97h used against 20h cap -> 0.03h raw remaining,
+    # which format_hours rounds down to "0h" — must land in the depleted
+    # section since it *displays* as 0, not the "has remaining" section a
+    # raw-value check would put it in.
+    clients = [
+        ClientRetainer(name="Barely Zero", monthly_hours_cap=20, time_entry_durations_ms=[71_892_000]),
+    ]
+    summary = build_summary(clients, testing=False)
+    lines = summary.splitlines()
+
+    depleted_idx = lines.index("**No more hours remaining**")
+    assert "Barely Zero: 0h remaining (20h used / 20h cap)" in lines[depleted_idx:]
+    assert "Barely Zero: 0h remaining (20h used / 20h cap)" not in lines[:depleted_idx]
+
+
 def test_build_summary_omits_not_configured_section_when_empty():
     clients = [ClientRetainer(name="Client A", monthly_hours_cap=10)]
     summary = build_summary(clients, testing=False)
