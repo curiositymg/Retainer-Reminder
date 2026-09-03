@@ -84,8 +84,26 @@ Each retainer-hours task's `Monthly Hours Cap` custom field comes back
 already included in the tag-filtered task list — no extra per-task fetch
 needed for the direct-API path.
 
+## Also in this repo
+
+`wordpress-plugin/ghl-directory/` is a self-contained WordPress plugin —
+unrelated to the ClickUp reporting above — that pulls contacts from a
+GoHighLevel (LeadConnector) sub-account and renders them as a filterable
+directory via `[ghl_directory]`. It caches contacts in the WordPress database
+and refreshes them hourly, so page loads never wait on the GoHighLevel API, and
+its filter bar (search, tag/city/state/company, custom fields, sorting,
+pagination) works with JavaScript off and upgrades to fetch-without-reload when
+JavaScript is on. Setup, the shortcode reference and the privacy defaults are in
+`wordpress-plugin/README.md`.
+
 ## Testing
 
 ```
 python3 -m pytest tests/
 ```
+
+That covers both projects: `tests/test_ghl_directory_plugin.py` lints the
+plugin's PHP, checks its structural invariants, and runs
+`wordpress-plugin/tests/run-tests.php` — the plugin's own logic suite, which
+exercises the real classes against stubbed WordPress functions (it needs the
+`php` CLI and is skipped without it).
