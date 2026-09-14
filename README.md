@@ -63,6 +63,23 @@ with the same permission, `assignee: ["any"]` will still fail there with
 path (and which account) is actually running before trusting either one's
 output.
 
+## Scheduled-run delay history
+
+GitHub's `schedule` trigger on this account has never fired exactly on time,
+and the delay has gotten worse over time rather than settling down — a
+support ticket is open with GitHub about it:
+
+- First scheduled run ever: ~1h13m late.
+- Aug 13–26: consistently 7 min–40 min late (acceptable).
+- Aug 27, 28: ~9.5h late (arrived mid-afternoon instead of morning).
+- Aug 31: ~6h15m late.
+
+The workflow's cron time has been moved earlier a few times to compensate
+(see the comment above the `cron:` line in
+`.github/workflows/daily-retainer-report.yml` for the current value and
+the DST adjustment note) — but that's a mitigation, not a fix. If the delay
+keeps growing, the real fix has to come from GitHub Support.
+
 ## Client discovery
 
 The spec says "named or tagged 'retainer hours'." In practice these are two
