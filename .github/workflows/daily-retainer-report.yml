@@ -8,14 +8,12 @@ on:
         type: boolean
         default: true
   schedule:
-    # 10:00 UTC, Mon-Fri = 5am Central (currently CDT, UTC-5). Moved
-    # earlier again since the actual scheduled fires had drifted to
-    # 6-9.5 hours late (arriving mid-afternoon instead of morning) —
-    # see README.md for the observed delay history. GitHub cron is
-    # fixed UTC and doesn't shift for DST, so this drifts to 4am once
-    # CST resumes in November — change the hour to 11 then (11:00 UTC)
-    # to hold 5am local.
-    - cron: "0 10 * * 1-5"
+    # 11:00 UTC, Mon-Fri = 5am Central (CST resumed Nov 1, UTC-6).
+    # GitHub cron is fixed UTC and doesn't shift for DST, so this will
+    # need to move back to 10:00 UTC when CDT resumes in March to hold
+    # 5am local. See README.md for the observed scheduling-delay
+    # history that led to moving this time earlier more than once.
+    - cron: "0 11 * * 1-5"
 
 jobs:
   send-report:
